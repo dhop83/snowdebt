@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+// Drag handlers (for desktop)
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.debtId);
+            e.target.style.opacity = '0.5';
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -86,12 +90,13 @@
             background: #f8f9fa;
             border: 3px dashed #dee2e6;
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 20px;
             min-height: 120px;
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
+            justify-content: center;
         }
 
         .debt-pool h3 {
@@ -99,37 +104,52 @@
             text-align: center;
             color: #666;
             margin-bottom: 10px;
+            font-size: 1.1rem;
         }
 
         .debt-card {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
             color: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 12px;
-            cursor: grab;
+            cursor: pointer;
             user-select: none;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            min-width: 180px;
+            min-width: 160px;
+            text-align: center;
+            position: relative;
+            border: 3px solid transparent;
         }
 
-        .debt-card:hover {
-            transform: translateY(-5px);
+        .debt-card:hover, .debt-card:focus {
+            transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
         .debt-card:active {
-            cursor: grabbing;
-            transform: scale(1.05);
+            transform: scale(1.02);
+        }
+
+        .debt-card.selected {
+            border-color: #fdcb6e;
+            box-shadow: 0 0 20px rgba(253, 203, 110, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .debt-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         .debt-card h4 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             margin-bottom: 8px;
         }
 
         .debt-info {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             opacity: 0.9;
         }
 
@@ -149,7 +169,7 @@
 
         .snowball-slots {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
         }
@@ -158,41 +178,44 @@
             background: rgba(255,255,255,0.7);
             border: 2px dashed #666;
             border-radius: 12px;
-            padding: 20px;
-            min-width: 180px;
-            min-height: 100px;
+            padding: 15px;
+            min-width: 160px;
+            min-height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
             position: relative;
+            cursor: pointer;
+            text-align: center;
         }
 
-        .snowball-slot.drag-over {
+        .snowball-slot.drag-over, .snowball-slot.tap-highlight {
             background: rgba(116, 185, 255, 0.3);
             border-color: #74b9ff;
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .snowball-slot.filled {
             border-style: solid;
             border-color: #00b894;
             background: rgba(0, 184, 148, 0.1);
+            cursor: default;
         }
 
         .slot-number {
             position: absolute;
             top: 5px;
-            left: 10px;
+            left: 8px;
             background: #333;
             color: white;
             border-radius: 50%;
-            width: 25px;
-            height: 25px;
+            width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
         }
 
@@ -298,17 +321,102 @@
             }
             
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            .instructions {
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+            
+            .instructions h2 {
+                font-size: 1.2rem;
+            }
+            
+            .debt-card {
+                min-width: 140px;
+                padding: 10px;
+            }
+            
+            .debt-card h4 {
+                font-size: 0.9rem;
+            }
+            
+            .debt-info {
+                font-size: 0.8rem;
+            }
+            
+            .snowball-slot {
+                min-width: 140px;
+                min-height: 80px;
+                padding: 10px;
             }
             
             .snowball-slots {
-                flex-direction: column;
-                align-items: center;
+                gap: 8px;
             }
             
             .controls {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+                padding: 15px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .feedback {
+                font-size: 1rem;
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .debt-pool, .snowball-slots {
+                justify-content: center;
+            }
+            
+            .debt-card, .snowball-slot {
+                min-width: 130px;
+            }
+            
+            .instructions li {
+                font-size: 0.85rem;
+                padding-left: 20px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .debt-card {
+                padding: 15px;
+                min-height: 70px;
+            }
+            
+            .snowball-slot {
+                min-height: 85px;
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 18px 24px;
+                min-height: 50px;
             }
         }
 
@@ -406,20 +514,72 @@
     </div>
 
     <script>
-        const debts = [
-            { id: 1, name: "Credit Card A", balance: 2500, minPayment: 75, order: 2 },
-            { id: 2, name: "Medical Bill", balance: 800, minPayment: 25, order: 1 },
-            { id: 3, name: "Student Loan", balance: 15000, minPayment: 200, order: 4 },
-            { id: 4, name: "Car Loan", balance: 8500, minPayment: 280, order: 3 },
-            { id: 5, name: "Credit Card B", balance: 4200, minPayment: 120, order: 5 }
+        const debtScenarios = [
+            // Scenario 1: Mixed consumer debts
+            [
+                { id: 1, name: "Credit Card A", balance: 2500, minPayment: 75 },
+                { id: 2, name: "Medical Bill", balance: 800, minPayment: 25 },
+                { id: 3, name: "Student Loan", balance: 15000, minPayment: 200 },
+                { id: 4, name: "Car Loan", balance: 8500, minPayment: 280 },
+                { id: 5, name: "Credit Card B", balance: 4200, minPayment: 120 }
+            ],
+            // Scenario 2: Multiple credit cards + loans
+            [
+                { id: 1, name: "Store Credit Card", balance: 650, minPayment: 25 },
+                { id: 2, name: "Personal Loan", balance: 3200, minPayment: 95 },
+                { id: 3, name: "Visa Card", balance: 1850, minPayment: 55 },
+                { id: 4, name: "Home Equity Loan", balance: 12000, minPayment: 145 },
+                { id: 5, name: "Mastercard", balance: 5800, minPayment: 175 }
+            ],
+            // Scenario 3: Business and personal mix
+            [
+                { id: 1, name: "Business Credit Line", balance: 4500, minPayment: 135 },
+                { id: 2, name: "Dental Work Loan", balance: 1200, minPayment: 40 },
+                { id: 3, name: "Motorcycle Loan", balance: 7800, minPayment: 195 },
+                { id: 4, name: "Tax Debt (IRS)", balance: 2800, minPayment: 85 },
+                { id: 5, name: "Payday Loan", balance: 450, minPayment: 65 }
+            ],
+            // Scenario 4: Various high-interest debts
+            [
+                { id: 1, name: "Cash Advance", balance: 750, minPayment: 50 },
+                { id: 2, name: "Furniture Financing", balance: 2200, minPayment: 68 },
+                { id: 3, name: "Phone Bill (Past Due)", balance: 320, minPayment: 32 },
+                { id: 4, name: "Auto Repair Loan", balance: 1650, minPayment: 55 },
+                { id: 5, name: "Credit Union Loan", balance: 6500, minPayment: 155 }
+            ],
+            // Scenario 5: Mixed education and lifestyle debts
+            [
+                { id: 1, name: "Graduate School Loan", balance: 18500, minPayment: 225 },
+                { id: 2, name: "Gym Membership Debt", balance: 480, minPayment: 25 },
+                { id: 3, name: "Vacation Credit Card", balance: 3400, minPayment: 102 },
+                { id: 4, name: "Apple Card", balance: 1100, minPayment: 35 },
+                { id: 5, name: "Wedding Loan", balance: 8200, minPayment: 185 }
+            ]
         ];
 
+        let currentScenarioIndex = 0;
+        let debts = [];
         let userOrder = [];
         let gameCompleted = false;
+        let scenariosCompleted = 0;
+        let selectedDebt = null;
+        let isTouchDevice = false;
+
+        // Detect touch device
+        function detectTouchDevice() {
+            isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        }
 
         function initializeGame() {
+            // Load current scenario
+            debts = [...debtScenarios[currentScenarioIndex]];
+            
             const debtPool = document.getElementById('debtPool');
             const snowballSlots = document.getElementById('snowballSlots');
+            
+            // Update header to show scenario progress
+            const header = document.querySelector('.header p');
+            header.textContent = `Learn the proven strategy to crush your debt faster! (Scenario ${currentScenarioIndex + 1} of 5)`;
             
             // Clear existing content
             debtPool.innerHTML = '<h3>Available Debts - Drag to Arrange in Snowball Order</h3>';
@@ -439,12 +599,20 @@
                 const slot = document.createElement('div');
                 slot.className = 'snowball-slot';
                 slot.dataset.position = i;
-                slot.innerHTML = `<div class="slot-number">${i}</div><div>Drop debt #${i} here</div>`;
+                slot.tabIndex = 0; // Make focusable
+                slot.innerHTML = `<div class="slot-number">${i}</div><div>Tap to place debt #${i}</div>`;
                 
-                // Add drop event listeners
-                slot.addEventListener('dragover', handleDragOver);
-                slot.addEventListener('drop', handleDrop);
-                slot.addEventListener('dragleave', handleDragLeave);
+                // Add drag event listeners for desktop
+                if (!isTouchDevice) {
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('drop', handleDrop);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                }
+                
+                // Add touch/click events for all devices
+                slot.addEventListener('click', handleSlotClick);
+                slot.addEventListener('touchend', handleSlotClick);
+                slot.addEventListener('keydown', handleSlotKeydown);
                 
                 snowballSlots.appendChild(slot);
             }
@@ -460,24 +628,154 @@
         function createDebtCard(debt) {
             const card = document.createElement('div');
             card.className = 'debt-card';
-            card.draggable = true;
             card.dataset.debtId = debt.id;
+            card.tabIndex = 0; // Make focusable for accessibility
             
             card.innerHTML = `
                 <h4>${debt.name}</h4>
                 <div class="debt-info">
-                    <div>Balance: $${debt.balance.toLocaleString()}</div>
-                    <div>Min Payment: $${debt.minPayment}</div>
+                    <div>Balance: ${debt.balance.toLocaleString()}</div>
+                    <div>Min Payment: ${debt.minPayment}</div>
                 </div>
             `;
             
-            card.addEventListener('dragstart', handleDragStart);
+            // Add both drag and touch/click event listeners
+            if (!isTouchDevice) {
+                card.draggable = true;
+                card.addEventListener('dragstart', handleDragStart);
+            }
+            
+            // Touch and click events for all devices
+            card.addEventListener('click', handleDebtClick);
+            card.addEventListener('touchend', handleDebtClick);
+            card.addEventListener('keydown', handleDebtKeydown);
+            
             return card;
         }
 
-        function handleDragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.dataset.debtId);
-            e.target.style.opacity = '0.5';
+        // Touch and click handlers
+        function handleDebtClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const debtId = parseInt(e.currentTarget.dataset.debtId);
+            const debt = debts.find(d => d.id === debtId);
+            
+            if (e.currentTarget.classList.contains('disabled')) return;
+            
+            // Clear previous selection
+            clearSelection();
+            
+            // Select this debt
+            selectedDebt = debt;
+            e.currentTarget.classList.add('selected');
+            
+            // Update slot instructions
+            updateSlotInstructions(`Tap a slot to place ${debt.name}`);
+        }
+
+        function handleSlotClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const position = parseInt(e.currentTarget.dataset.position);
+            
+            if (selectedDebt) {
+                placeDebtInSlot(selectedDebt, position);
+                clearSelection();
+                updateSlotInstructions('Tap a debt card to select it');
+            }
+        }
+
+        function handleDebtKeydown(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleDebtClick(e);
+            }
+        }
+
+        function handleSlotKeydown(e) {
+            if ((e.key === 'Enter' || e.key === ' ') && selectedDebt) {
+                e.preventDefault();
+                handleSlotClick(e);
+            }
+        }
+
+        function clearSelection() {
+            if (selectedDebt) {
+                const selectedCard = document.querySelector(`[data-debt-id="${selectedDebt.id}"]`);
+                if (selectedCard) selectedCard.classList.remove('selected');
+                selectedDebt = null;
+            }
+            
+            // Remove tap highlights from slots
+            document.querySelectorAll('.snowball-slot').forEach(slot => {
+                slot.classList.remove('tap-highlight');
+            });
+        }
+
+        function updateSlotInstructions(message) {
+            const emptySlots = document.querySelectorAll('.snowball-slot:not(.filled)');
+            emptySlots.forEach(slot => {
+                const position = slot.dataset.position;
+                slot.innerHTML = `<div class="slot-number">${position}</div><div>${message}</div>`;
+            });
+        }
+
+        function placeDebtInSlot(debt, position) {
+            const slot = document.querySelector(`[data-position="${position}"]`);
+            
+            // Remove debt from current position if it exists
+            const existingIndex = userOrder.findIndex(item => item && item.position === position);
+            if (existingIndex !== -1) {
+                returnDebtToPool(userOrder[existingIndex].debt);
+                userOrder[existingIndex] = null;
+            }
+            
+            // Remove debt from any other position
+            const debtIndex = userOrder.findIndex(item => item && item.debt.id === debt.id);
+            if (debtIndex !== -1) {
+                const oldSlot = document.querySelector(`[data-position="${userOrder[debtIndex].position}"]`);
+                oldSlot.innerHTML = `<div class="slot-number">${userOrder[debtIndex].position}</div><div>Tap to place debt #${userOrder[debtIndex].position}</div>`;
+                oldSlot.classList.remove('filled');
+                userOrder[debtIndex] = null;
+            }
+            
+            // Place debt in new position
+            userOrder[position - 1] = { debt, position };
+            slot.innerHTML = `
+                <div class="slot-number">${position}</div>
+                <div class="debt-card" style="margin: 0; min-width: auto; background: linear-gradient(135deg, #00b894, #00a085); cursor: pointer;" onclick="removeDebtFromSlot(${position})">
+                    <h4>${debt.name}</h4>
+                    <div class="debt-info">
+                        <div>${debt.balance.toLocaleString()}</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 4px;">Tap to remove</div>
+                    </div>
+                </div>
+            `;
+            slot.classList.add('filled');
+            
+            // Remove from debt pool
+            const debtCard = document.querySelector(`[data-debt-id="${debt.id}"]`);
+            if (debtCard) debtCard.remove();
+            
+            updateProgress();
+        }
+
+        function removeDebtFromSlot(position) {
+            const slot = document.querySelector(`[data-position="${position}"]`);
+            const debtIndex = userOrder.findIndex(item => item && item.position === position);
+            
+            if (debtIndex !== -1) {
+                const debt = userOrder[debtIndex].debt;
+                returnDebtToPool(debt);
+                userOrder[debtIndex] = null;
+                
+                slot.innerHTML = `<div class="slot-number">${position}</div><div>Tap to place debt #${position}</div>`;
+                slot.classList.remove('filled');
+                
+                updateProgress();
+            }
         }
 
         function handleDragOver(e) {
@@ -497,41 +795,7 @@
             const position = parseInt(slot.dataset.position);
             
             slot.classList.remove('drag-over');
-            
-            // Remove debt from current position if it exists
-            const existingIndex = userOrder.findIndex(item => item && item.position === position);
-            if (existingIndex !== -1) {
-                returnDebtToPool(userOrder[existingIndex].debt);
-                userOrder[existingIndex] = null;
-            }
-            
-            // Remove debt from any other position
-            const debtIndex = userOrder.findIndex(item => item && item.debt.id === debtId);
-            if (debtIndex !== -1) {
-                const oldSlot = document.querySelector(`[data-position="${userOrder[debtIndex].position}"]`);
-                oldSlot.innerHTML = `<div class="slot-number">${userOrder[debtIndex].position}</div><div>Drop debt #${userOrder[debtIndex].position} here</div>`;
-                oldSlot.classList.remove('filled');
-                userOrder[debtIndex] = null;
-            }
-            
-            // Place debt in new position
-            userOrder[position - 1] = { debt, position };
-            slot.innerHTML = `
-                <div class="slot-number">${position}</div>
-                <div class="debt-card" style="margin: 0; min-width: auto; background: linear-gradient(135deg, #00b894, #00a085);">
-                    <h4>${debt.name}</h4>
-                    <div class="debt-info">
-                        <div>$${debt.balance.toLocaleString()}</div>
-                    </div>
-                </div>
-            `;
-            slot.classList.add('filled');
-            
-            // Remove from debt pool
-            const debtCard = document.querySelector(`[data-debt-id="${debtId}"]`);
-            if (debtCard) debtCard.remove();
-            
-            updateProgress();
+            placeDebtInSlot(debt, position);
         }
 
         function returnDebtToPool(debt) {
@@ -556,31 +820,79 @@
                 return;
             }
             
+            // Create the correct order based on balance (smallest to largest)
+            const correctOrder = [...debts].sort((a, b) => a.balance - b.balance);
+            
             let correct = true;
             for (let i = 0; i < 5; i++) {
-                if (!userOrder[i] || userOrder[i].debt.order !== i + 1) {
+                if (!userOrder[i] || userOrder[i].debt.id !== correctOrder[i].id) {
                     correct = false;
                     break;
                 }
             }
             
             if (correct) {
+                scenariosCompleted++;
                 feedback.className = 'feedback success';
-                feedback.textContent = 'Perfect! You\'ve mastered the debt snowball strategy!';
+                
+                if (scenariosCompleted >= 5) {
+                    feedback.textContent = 'Congratulations! You\'ve mastered the debt snowball strategy across all 5 scenarios!';
+                } else {
+                    feedback.textContent = `Perfect! Scenario ${currentScenarioIndex + 1} complete. You\'ve mastered the debt snowball strategy!`;
+                }
+                
                 feedback.style.display = 'block';
                 
                 document.getElementById('celebration').style.display = 'block';
                 document.getElementById('summary').style.display = 'block';
                 gameCompleted = true;
+                
+                // Update button text for next scenario
+                const checkButton = document.querySelector('.btn-primary');
+                if (scenariosCompleted < 5) {
+                    checkButton.textContent = 'NEXT SCENARIO';
+                    checkButton.onclick = nextScenario;
+                } else {
+                    checkButton.textContent = 'RESTART ALL SCENARIOS';
+                    checkButton.onclick = restartAllScenarios;
+                }
             } else {
                 feedback.className = 'feedback error';
-                feedback.textContent = 'Not quite right. Remember: arrange debts from SMALLEST to LARGEST balance. The $800 medical bill should be first!';
+                const smallestDebt = correctOrder[0];
+                feedback.textContent = `Not quite right. Remember: arrange debts from SMALLEST to LARGEST balance. The ${smallestDebt.balance.toLocaleString()} ${smallestDebt.name} should be first!`;
                 feedback.style.display = 'block';
             }
         }
 
         function resetGame() {
+            // Reset current scenario only
             initializeGame();
+            
+            // Reset button functionality
+            const checkButton = document.querySelector('.btn-primary');
+            checkButton.textContent = 'CHECK MY STRATEGY';
+            checkButton.onclick = checkAnswer;
+        }
+
+        function nextScenario() {
+            currentScenarioIndex = (currentScenarioIndex + 1) % debtScenarios.length;
+            initializeGame();
+            
+            // Reset button functionality
+            const checkButton = document.querySelector('.btn-primary');
+            checkButton.textContent = 'CHECK MY STRATEGY';
+            checkButton.onclick = checkAnswer;
+        }
+
+        function restartAllScenarios() {
+            currentScenarioIndex = 0;
+            scenariosCompleted = 0;
+            initializeGame();
+            
+            // Reset button functionality
+            const checkButton = document.querySelector('.btn-primary');
+            checkButton.textContent = 'CHECK MY STRATEGY';
+            checkButton.onclick = checkAnswer;
         }
 
         // Handle drag end
@@ -589,7 +901,11 @@
         });
 
         // Initialize game on load
-        window.addEventListener('load', initializeGame);
+        window.addEventListener('load', () => {
+            // Randomize starting scenario
+            currentScenarioIndex = Math.floor(Math.random() * debtScenarios.length);
+            initializeGame();
+        });
     </script>
 </body>
 </html>
