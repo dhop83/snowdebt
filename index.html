@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Debt Snowball Mastery</title>
 </head>
 <body style="margin:0;padding:0;background:#f5f6fa;font-family:'Segoe UI',Arial,sans-serif;">
@@ -20,7 +20,7 @@
           <li>Pay minimums on all debts, then attack the smallest balance first</li>
           <li>Once smallest debt is paid off, roll that payment into the next smallest</li>
           <li>This creates momentum and psychological wins that keep you motivated!</li>
-          <li><strong>Your Goal:</strong> Drag the debt cards below into the correct snowball order</li>
+          <li><strong>Your Goal:</strong> Tap debts below in the order from smallest to largest</li>
         </ul>
       </div>
 
@@ -29,12 +29,12 @@
       </div>
 
       <div id="debtPool" style="background:#f8fafc;padding:18px 12px 10px 12px;border-radius:12px;margin-bottom:28px;border:1px solid #e2e8f0;">
-        <h3 style="margin:0 0 10px 0;color:#2d3a4a;font-size:1.1rem;">Available Debts - Drag to Arrange in Snowball Order</h3>
+        <h3 style="margin:0 0 10px 0;color:#2d3a4a;font-size:1.1rem;">Available Debts - Tap to Add to Snowball Order</h3>
       </div>
 
       <div>
         <h3 style="color:#2d3a4a;font-size:1.1rem;margin-bottom:8px;">🎯 Your Debt Snowball Strategy</h3>
-        <div id="snowballSlots" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:18px;"></div>
+        <div id="snowballSlots" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:18px;"></div>
       </div>
 
       <div id="celebration" style="display:none;text-align:center;font-size:2rem;color:#34b37f;font-weight:bold;margin:20px 0 10px 0;">🎉 Excellent Work! 🎉</div>
@@ -87,9 +87,9 @@ const debtScenarios = [
 let currentDebts = [];
 let correctOrder = [];
 let userOrder = [];
-let slots = [];
 let selectedDebt = null;
 
+// Utility to shuffle array
 function shuffle(array) {
     let arr = array.slice();
     for (let i = arr.length - 1; i > 0; i--) {
@@ -99,12 +99,15 @@ function shuffle(array) {
     return arr;
 }
 
+function isMobile() {
+    return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+
 function initGame() {
     const scenario = debtScenarios[Math.floor(Math.random() * debtScenarios.length)];
     currentDebts = shuffle(scenario);
     correctOrder = scenario.slice().sort((a, b) => a.balance - b.balance);
     userOrder = Array(currentDebts.length).fill(null);
-    slots = Array(currentDebts.length).fill(null);
     selectedDebt = null;
 
     renderDebtPool();
@@ -118,7 +121,7 @@ function initGame() {
 
 function renderDebtPool() {
     const pool = document.getElementById('debtPool');
-    pool.innerHTML = '<h3 style="margin:0 0 10px 0;color:#2d3a4a;font-size:1.1rem;">Available Debts - Drag to Arrange in Snowball Order</h3>';
+    pool.innerHTML = '<h3 style="margin:0 0 10px 0;color:#2d3a4a;font-size:1.1rem;">Available Debts - Tap to Add to Snowball Order</h3>';
     currentDebts.forEach(debt => {
         const placed = userOrder.find(d => d && d.id === debt.id);
         const card = document.createElement('div');
@@ -131,14 +134,15 @@ function renderDebtPool() {
             box-shadow:0 2px 10px rgba(44,62,80,0.07);
             margin:0 8px 10px 0;
             padding:14px 18px 10px 18px;
-            min-width:160px;
+            min-width:140px;
             max-width:210px;
-            cursor:${placed ? 'not-allowed' : 'grab'};
+            cursor:${placed ? 'not-allowed' : 'pointer'};
             opacity:${placed ? 0.4 : 1};
             transition:box-shadow 0.2s;
             font-size:1rem;
+            user-select:none;
+            touch-action:manipulation;
         `;
-        card.setAttribute('draggable', !placed);
         card.dataset.debtId = debt.id;
         card.tabIndex = placed ? -1 : 0;
         card.innerHTML = `
@@ -146,8 +150,11 @@ function renderDebtPool() {
             <div style="color:#5a6d8a;font-size:0.98rem;">Balance: $${debt.balance.toLocaleString()}<br>Min Payment: $${debt.minPayment}</div>
         `;
         if (!placed) {
-            card.addEventListener('dragstart', handleDragStart);
             card.addEventListener('click', () => handleSelectDebt(debt.id));
+            card.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleSelectDebt(debt.id);
+            }, {passive:false});
             card.addEventListener('keydown', e => {
                 if ((e.key === "Enter" || e.key === " ") && !placed) {
                     handleSelectDebt(debt.id);
@@ -179,6 +186,8 @@ function renderSnowballSlots() {
             transition:border-color 0.2s,background 0.2s;
             cursor:pointer;
             box-shadow:0 1px 7px rgba(44,62,80,0.05);
+            user-select:none;
+            touch-action:manipulation;
         `;
         slot.dataset.slotIndex = i;
         slot.innerHTML = `<div style="position:absolute;top:7px;left:10px;font-size:0.94rem;color:#b3c2d4;font-weight:600;">${i + 1}</div>`;
@@ -193,37 +202,12 @@ function renderSnowballSlots() {
             slot.style.background = '#e7f8ee';
             slot.style.borderColor = '#34b37f';
         }
-        slot.addEventListener('dragover', handleDragOver);
-        slot.addEventListener('drop', handleDrop);
         slot.addEventListener('click', () => handleSlotClick(i));
-        slot.addEventListener('dragenter', e => slot.style.borderColor = '#34b37f');
-        slot.addEventListener('dragleave', e => slot.style.borderColor = '#b3c2d4');
+        slot.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleSlotClick(i);
+        }, {passive:false});
         slotsDiv.appendChild(slot);
-    }
-}
-
-function handleDragStart(e) {
-    e.dataTransfer.setData('text/plain', e.target.dataset.debtId);
-    e.target.style.opacity = '0.5';
-}
-document.addEventListener('dragend', e => {
-    document.querySelectorAll('[draggable="true"]').forEach(card => card.style.opacity = '1');
-});
-
-function handleDragOver(e) {
-    e.preventDefault();
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    const debtId = Number(e.dataTransfer.getData('text/plain'));
-    const slotIdx = Number(e.currentTarget.dataset.slotIndex);
-    if (!userOrder[slotIdx]) {
-        const debt = currentDebts.find(d => d.id === debtId);
-        userOrder[slotIdx] = debt;
-        renderDebtPool();
-        renderSnowballSlots();
-        updateProgress();
     }
 }
 
@@ -284,7 +268,22 @@ function updateProgress() {
     document.getElementById('progressFill').style.width = (filled / total * 100) + '%';
 }
 
-window.onload = initGame;
+// Responsive scaling for mobile
+function setResponsiveRootFont() {
+    // For screens < 600px, scale down base font
+    if(window.innerWidth < 600) {
+        document.body.style.fontSize = '15px';
+        document.body.parentElement.style.background = '#f5f6fa';
+    } else {
+        document.body.style.fontSize = '17px';
+    }
+}
+window.addEventListener('resize', setResponsiveRootFont);
+
+window.onload = function() {
+    setResponsiveRootFont();
+    initGame();
+};
 </script>
 </body>
 </html>
